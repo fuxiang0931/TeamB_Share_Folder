@@ -47,86 +47,7 @@ function db_goods_add($link,$newName,$newPrice,$newStock,$newStatus,$newImage_ad
     }
     return $error;
 }
-/**
- * DB　表　updete
-*/
-function db_stock_update($link,$changed_stock,$change_goods_id){
-    $error = [];
-    $time = get_time();
-    $sql = "UPDATE ec_goods_stock_table 
-            SET stock={$changed_stock},updated_date='{$time}' 
-            WHERE goods_id={$change_goods_id}";
-    if(mysqli_query($link,$sql) === false){
-        $error[] = 'stockの更新か失敗しました。';
-    }
-    return $error;
-}
-function db_status_update($link,$change_status,$change_goods_id){
-    $error = [];
-    $time = get_time();
-    $sql = "UPDATE ec_goods_item_table 
-            SET goods_status={$change_status},updated_date = '{$time}' 
-            WHERE goods_id={$change_goods_id}";
-    if(mysqli_query($link,$sql) === false){
-        $error[] = 'statusの更新か失敗しました。';
-    }
-    return $error;
-}
-function db_goods_delete($link,$change_goods_id){
-    $error = [];
-    $sql = "DELETE FROM ec_goods_item_table
-            WHERE goods_id = {$change_goods_id}";
-    if(mysqli_query($link,$sql) === false){
-        $error[] = 'Delete か失敗しました。';
-    }
-    return $error;
-}
 
-/**
- * DB goods検索 goodsデータ
- * @param object $link
- * @return Array data[]
- */
-function get_goods_table_array($link){
-    $data = [];
-    //在庫表示SQL
-    $sql = 'SELECT 
-    ec_goods_item_table.goods_id,ec_goods_item_table.goods_img,ec_goods_item_table.goods_name,
-    ec_goods_item_table.goods_price,ec_goods_item_table.goods_status,
-    ec_goods_stock_table.stock
-    FROM ec_goods_item_table 
-    JOIN ec_goods_stock_table ON ec_goods_stock_table.goods_id=ec_goods_item_table.goods_id';
-    return get_as_array($link,$sql);
-}
-
-/**
- * DB user検索 userデータ
- * @param object $link
- * @return Array data[]
- */
-function get_user_table_array($link){
-    $data = [];
-    //User SQL
-    $sql = 'SELECT user_id,user_name,created_date,updated_date
-            FROM ec_user_table';
-    return get_as_array($link,$sql);
-}
-/**
- * get DB top page goods_date
- * @param object $link
- * @return Array data[]
- */
-function get_topPage_goods_table_array($link){
-    $data = [];
-    //User SQL
-    $sql = 'SELECT ec_goods_item_table.goods_id,ec_goods_item_table.goods_name,
-    ec_goods_item_table.goods_price,ec_goods_item_table.goods_img,ec_goods_item_table.goods_status,ec_goods_stock_table.stock
-    FROM ec_goods_item_table
-    JOIN ec_goods_stock_table
-    ON ec_goods_stock_table.goods_id=ec_goods_item_table.goods_id
-    WHERE ec_goods_item_table.goods_status =1';
-    return get_as_array($link,$sql);
-}
 /**
 * クエリを実行しその結果を配列で取得する
 *
@@ -186,15 +107,7 @@ function close_db_connect($link){
 //     }
 // }
 
-/**
- * DB inset & update 実行
- * @param object $link
- * @param String &sql
- * @return boolean true||false
- */
-function query_db($link,$sql){
-    return mysqli_query($link,$sql);
-}
+
 
 /**
 * リクエストメソッドを取得
@@ -217,6 +130,7 @@ function get_post_data($key) {
    }
    return $str;
 }
+
 
 /**
 * Image type、存在チェック
@@ -331,133 +245,9 @@ function log_write_array($name,$array){
     fclose($fp);
 }
 
-/**
- * Add DATA CHECK
- * @return array $error
- */
-function add_data_check($newName,$newPrice,$newStock,$newStatus){
-    $error = [];
-    if($newName == ''){
-        array_push($error,'名前を入力してください。');
-    }
-    
-    if($newPrice == ''){
-        array_push($error,'値段を入力してください。');
-    }else{
-        if(preg_match(NUM_REGEXP,$newPrice) !== 1){
-            array_push($error,'値段は半角数字を入力してください。');
-        }else{
-            $newPrice = intval($newPrice);
-        }
-        if($newPrice < 0){
-            array_push($error,'値段は0以上の整数を入力してください。');
-        }
-    }
-    
-    if($newStock == ''){
-        array_push($error,'個数を入力してください。');
-    }else{
-        
-        if(preg_match(NUM_REGEXP,$newStock) !== 1){
-            array_push($error,'個数は半角数字を入力してください。');
-        }else{
-            $newStock = intval($newStock);
-        }
-        if($newStock < 0){
-            array_push($error,'個数は0以上の整数を入力してください。');
-        }
-    }
-    
-    if($newStatus == 0){
-        array_push($error,'公開or非公開選択下さい。');
-    }
-    return $error;
-}
-/**
- * change stock DATA CHECK
- * @return array $error
-*/
-function stock_check($changed_stock,$change_goods_id){
-    $error = [];
-    if($change_goods_id == ''){
-        array_push($error,'get POST goods_id error');
-    }
-    if($changed_stock == ''){
-        $error[]='在庫数入力下さい。';
-    }
-    if(preg_match(NUM_REGEXP,$changed_stock) !== 1){
-        $error[]= '個数は半角数字を入力してください。';
-    }else{
-        $changed_stock = intval($changed_stock);
-    }
-    if($changed_stock < 0){
-        array_push($error,'個数は0以上の整数を入力してください。');
-    }
-    return $error;
-}
-/**
- * change status DATA CHECK
- * @return array $error
-*/
-function status_check($change_status,$change_goods_id){
-    $error = [];
-    if($change_goods_id == ''){
-        array_push($error,'get POST goods_id error');
-    }
-    if($change_status == ''){
-        array_push($error,'get $change_status error');
-    }
-    return $error;
-}
-
 function get_time(){
     return date('Y-m-d H:i:s');
 }
-/**
- * DB user_id チェック
- * @param int  $user_id $_SESSION['user_id']
- * return str $user_name
- *        true  DB username
- *        false  空str''
-*/
-function user_id_check($user_id){
-    //userid check
-    //DB link
-    $user_name = "";
-    $link = get_db_connect();
-    $sql = "SELECT user_name
-            FROM ec_user_table
-            WHERE user_id ={$user_id}";
-    $data = get_as_array($link,$sql);
-    if(isset($data[0]['user_name'])){
-        $user_name = $data[0]['user_name'];
-    }
-    //DB Close
-    close_db_connect($link);
-    return $user_name;
-}
-
-/**
- * 同じユーザー名が既に登録されているがチェク
- * @param str  $new_user_name
- * @return  true || false
-**/
-function new_user_name_db_check($new_user_name){
-    //DB link
-    $data = [];
-    $link = get_db_connect();
-    $sql = "SELECT user_id FROM ec_user_table
-            WHERE user_name = '{$new_user_name}'";
-    $data = get_as_array($link,$sql);
-     //DB Close
-    close_db_connect($link);
-    if(isset($data[0]['user_id'])){
-        return false;
-    }else{
-        return true;
-    }
-}
-
 
 /**
  * DBインセント
@@ -470,38 +260,16 @@ function db_insert($sql){
     close_db_connect($link);
     return $result;
 }
+/**
+ * DBアプデータ
+ * @param str $sql
+ * @return  true || false
+**/
 function db_update($sql){
     $link = get_db_connect();
     $result = query_db($link,$sql);
     close_db_connect($link);
     return $result;
-}
-
-/**
- * change input ammont DATA CHECK
- * @return array $error
-*/
-function amount_check($select_amount){
-    $error = [];
-    if($select_amount == ''){
-        $error[]='在庫数入力下さい。';
-    }
-    if(preg_match(NUM_REGEXP,$select_amount) !== 1){
-        $error[]= '個数は半角数字を入力してください。';
-    }else{
-        $select_amount = intval($select_amount);
-    }
-    if($select_amount <= 0){
-        array_push($error,'数量は１以上の整数を入力してください。');
-    }
-    return $error;
-}
-/**
- * priceFormat
- * 价格格式处理
-*/
-function priceFormat($price){
-    return number_format($price);
 }
 
 /**
